@@ -1,12 +1,13 @@
-#define UP_BTN_PIN 12
-#define DOWN_BTN_PIN 11
-#define BACK_BTN_PIN 10
-#define SELECT_BTN_PIN 9
-#define BUZZER_PIN 8
-#define RED_LED_PIN 7
-#define GREEN_LED_PIN 6 
+#define UP_BTN_PIN 8
+#define DOWN_BTN_PIN 7
+#define BACK_BTN_PIN 6
+#define SELECT_BTN_PIN 5
+#define BUZZER_PIN 11
+#define RED_LED_PIN 9
+#define GREEN_LED_PIN 10 
 #define sensorPin A0
-#define ledPin 13
+
+#include "pitches.h"
 
 #include <Wire.h> 
 #include <LiquidCrystal_I2C.h>
@@ -27,8 +28,71 @@ byte state = 0;
 bool printedArmed = false;
 
 String menu[] = {
-  "Kikapcsol",
-  "Elesit"
+  "Szervusz",
+  "Meres",
+  "Zene"
+};
+
+int melody[] = {
+  NOTE_AS4, NOTE_AS4, NOTE_AS4, NOTE_AS4,
+  NOTE_AS4, NOTE_AS4, NOTE_AS4, NOTE_AS4,
+  NOTE_AS4, NOTE_AS4, NOTE_AS4, NOTE_AS4,
+  NOTE_AS4, NOTE_AS4, NOTE_AS4, NOTE_AS4,
+  NOTE_AS4, NOTE_AS4, NOTE_AS4, NOTE_AS4,
+  NOTE_D5, NOTE_D5, NOTE_D5, NOTE_D5,
+  NOTE_C5, NOTE_C5, NOTE_C5, NOTE_C5,
+  NOTE_F5, NOTE_F5, NOTE_F5, NOTE_F5,
+  NOTE_G5, NOTE_G5, NOTE_G5, NOTE_G5,
+  NOTE_G5, NOTE_G5, NOTE_G5, NOTE_G5,
+  NOTE_G5, NOTE_G5, NOTE_G5, NOTE_G5,
+  NOTE_C5, NOTE_AS4, NOTE_A4, NOTE_F4,
+  NOTE_G4, 0, NOTE_G4, NOTE_D5,
+  NOTE_C5, 0, NOTE_AS4, 0,
+  NOTE_A4, 0, NOTE_A4, NOTE_A4,
+  NOTE_C5, 0, NOTE_AS4, NOTE_A4,
+  NOTE_G4, 0, NOTE_G4, NOTE_AS5,
+  NOTE_A5, NOTE_AS5, NOTE_A5, NOTE_AS5,
+  NOTE_G4, 0, NOTE_G4, NOTE_AS5,
+  NOTE_A5, NOTE_AS5, NOTE_A5, NOTE_AS5,
+  NOTE_G4, 0, NOTE_G4, NOTE_D5,
+  NOTE_C5, 0, NOTE_AS4, 0,
+  NOTE_A4, 0, NOTE_A4, NOTE_A4,
+  NOTE_C5, 0, NOTE_AS4, NOTE_A4,
+  NOTE_G4, 0, NOTE_G4, NOTE_AS5,
+  NOTE_A5, NOTE_AS5, NOTE_A5, NOTE_AS5,
+  NOTE_G4, 0, NOTE_G4, NOTE_AS5,
+  NOTE_A5, NOTE_AS5, NOTE_A5, NOTE_AS5
+};
+
+int noteDurations[] = {
+  4, 4, 4, 4,
+  4, 4, 4, 4,
+  4, 4, 4, 4,
+  4, 4, 4, 4,
+  4, 4, 4, 4,
+  4, 4, 4, 4,
+  4, 4, 4, 4,
+  4, 4, 4, 4,
+  4, 4, 4, 4,
+  4, 4, 4, 4,
+  4, 4, 4, 4,
+  4, 4, 4, 4,
+  4, 4, 4, 4,
+  4, 4, 4, 4,
+  4, 4, 4, 4,
+  4, 4, 4, 4,
+  4, 4, 4, 4,
+  4, 4, 4, 4,
+  4, 4, 4, 4,
+  4, 4, 4, 4,
+  4, 4, 4, 4,
+  4, 4, 4, 4,
+  4, 4, 4, 4,
+  4, 4, 4, 4,
+  4, 4, 4, 4,
+  4, 4, 4, 4,
+  4, 4, 4, 4,
+  4, 4, 4, 4,
 };
 
 int menuSize = sizeof(menu) / sizeof(menu[0]);
@@ -50,8 +114,6 @@ void setup() {
   pinMode(RED_LED_PIN, OUTPUT);
   pinMode(GREEN_LED_PIN, OUTPUT);
 
-  pinMode(ledPin, OUTPUT);
-
   Serial.begin(9600);
 
   lcd.init();
@@ -72,86 +134,10 @@ void loop() {
       checkButtons();
       break;
     case 1:
-      monitorMode();
+      heartrate();
       break;
-  }
-}
-
-void checkButtons() {
-
-  if(buttonPressed(UP_BTN_PIN)) {
-    menuMoveUp();
-    updateMenu();
-  }
-
-  if(buttonPressed(DOWN_BTN_PIN)) {
-    menuMoveDown();
-    updateMenu();
-  }
-
-  if(buttonPressed(SELECT_BTN_PIN)) {
-    executeSelected();
-  }
-
-}
-
-void monitorMode() {
-
-  if (!printedArmed) {
-    lcd.clear();
-    lcd.setCursor(4, 0);
-    lcd.print("Elesitve");
-    printedArmed = true;
-  }
-
-
-  // ide jön még a PIR szenzor figyelése
-
-  digitalWrite(RED_LED_PIN, HIGH);
-  delay(1000);
-  digitalWrite(RED_LED_PIN, LOW);
-  delay(1000);
-  
-}
-
-int buttonPressed(uint8_t button) {
-  byte prevState = LOW;
-  byte state = digitalRead(button);
-  if (state != prevState) {
-    prevState = state;
-    if (state == HIGH) {
-      delay(100);
-      return true;
-    }
-  }
-  return false;
-}
-
-void menuMoveUp() {
-  if (currentMenuItem > 0) {
-      currentMenuItem--;
-    }
-  else {
-    currentMenuItem = menuSize - 1;
-  }
-}
-
-void menuMoveDown() {
-  if (currentMenuItem < menuSize - 1) {
-      currentMenuItem++;
-    }
-  else {
-    currentMenuItem = 0;
-  }
-}
-
-void executeSelected() {
-  switch(currentMenuItem) {
-    case 0:
-      state = 0;
-      break;
-    case 1:
-      state = 1;
+    case 2:
+      music();
       break;
   }
 }
@@ -208,6 +194,105 @@ void updateMenu() {
 
 }
 
+void checkButtons() {
+
+  if(buttonPressed(UP_BTN_PIN)) {
+    menuMoveUp();
+    updateMenu();
+  }
+
+  if(buttonPressed(DOWN_BTN_PIN)) {
+    menuMoveDown();
+    updateMenu();
+  }
+
+  if(buttonPressed(SELECT_BTN_PIN)) {
+    executeSelected();
+  }
+
+}
+
+void monitorMode() {
+
+  if (!printedArmed) {
+    lcd.clear();
+    lcd.setCursor(4, 0);
+    lcd.print("Elesitve");
+    printedArmed = true;
+  }
+
+
+  // ide jön még a PIR szenzor figyelése
+
+  digitalWrite(RED_LED_PIN, HIGH);
+  delay(1000);
+  digitalWrite(RED_LED_PIN, LOW);
+  delay(1000);
+  
+}
+
+int buttonPressed(uint8_t button) {
+  byte prevState = LOW;
+  byte state = digitalRead(button);
+  if (state != prevState) {
+    prevState = state;
+    if (state == HIGH) {
+      delay(100);
+      return true;
+    }
+  }
+  return false;
+}
+
+void music(){
+  for (int thisNote = 0; thisNote < 112; thisNote++) {
+    if(buttonPressed(BACK_BTN_PIN) )
+      {
+         updateMenu();
+         state = 0;
+         break;
+      }
+    int noteDuration = 750 / noteDurations[thisNote];
+    tone(BUZZER_PIN, melody[thisNote], noteDuration);
+    int pauseBetweenNotes = noteDuration * 1.30;
+    delay(pauseBetweenNotes);
+    noTone(BUZZER_PIN);
+    Serial.println(melody[thisNote]);
+   }
+}
+void menuMoveUp() {
+  if (currentMenuItem > 0) {
+      currentMenuItem--;
+    }
+  else {
+    currentMenuItem = menuSize - 1;
+  }
+}
+
+void menuMoveDown() {
+  if (currentMenuItem < menuSize - 1) {
+      currentMenuItem++;
+    }
+  else {
+    currentMenuItem = 0;
+  }
+}
+
+void executeSelected() {
+  switch(currentMenuItem) {
+    case 0:
+      state = 0;
+      break;
+    case 1:
+      lcd.clear();
+      state = 1;
+      break;
+    case 2:
+      state = 2;
+      break;
+  }
+}
+
 void heartrate(){
   // Arbitrary initial value for the sensor value (0 - 1023)
   // too large and it takes a few seconds to 'lock on' to pulse
@@ -244,8 +329,8 @@ void heartrate(){
     max = change;
 
     // Flash LED and beep the buzzer
-    digitalWrite(ledPin, 1);
-    tone(3, 2000, 50);
+    digitalWrite(GREEN_LED_PIN, 1);
+    tone(BUZZER_PIN, 2000, 50);
 
     // Reset the heart beat time values
     timeBetweenBeats = millis();
@@ -253,7 +338,7 @@ void heartrate(){
   }
   else {
     // No pulse detected, ensure LED is off (may be off already)
-    digitalWrite(ledPin, 0);
+    digitalWrite(RED_LED_PIN, 0);
   }
   // Slowly decay max for when sensor is moved around
   // but decay must be slower than time needed to hit
@@ -263,12 +348,18 @@ void heartrate(){
   // Every 15 seconds extrapolate the pulse rate. Improvement would
   // be to average out BPM over last 60 seconds
   if (millis() >= bpmMills + 15000) {
-    Serial.print("BPM (approx): ");
-    Serial.println(bpm * 4);
+    lcd.print("BPM (approx): ");
+    lcd.println(bpm * 4);
+    lcd.println();
     bpm = 0;
     bpmMills = millis();
   }
-
+  if(buttonPressed(BACK_BTN_PIN))
+  {
+    updateMenu();
+    state = 0;
+    digitalWrite(GREEN_LED_PIN,0);
+  }
   // Must delay here to give the value a chance to decay
   delay(period);
 }
